@@ -8,7 +8,12 @@ import (
 func handlerFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Someone visited the website.")
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, "<h1>Welcome to my super awesome site!</h1>")
+
+	if r.URL.Path == "/" {
+		fmt.Fprint(w, "<h1>Homepage</h1>")
+	} else {
+		fmt.Fprint(w, "<h1>Other pages</h1>")
+	}
 }
 
 func main() {
