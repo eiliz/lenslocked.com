@@ -1,0 +1,12 @@
+// .Dog === currentObject.Dog
+
+<h1>Hello, {{.Dog.Name }}</h1>
+<p>{{.Int}}</p>
+<p>{{.Float}}</p>
+<p>{{.Slice}}</p>
+<p>{{.Map}}</p>
+
+// . is the current object
+{{range .Slice}}
+  <p>{{.}}</p>
+{{end}}
