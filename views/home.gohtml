@@ -1,5 +1,9 @@
-<h1>Welcome!</h1>
-<p>This is a template</p>
+{{define "yield"}}
 
-<!-- use the footer template, pass it all the data (.) -->
-{{template "footer" .}}
+  <h1>Welcome!</h1>
+  <p>This is a template</p>
+
+  <!-- use the footer template, pass it all the data (.) -->
+  {{template "footer" .}}
+
+{{end}}
