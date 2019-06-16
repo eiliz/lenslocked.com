@@ -14,6 +14,7 @@ func NewUsers() *Users {
 	}
 }
 
+// Users is the users controller
 type Users struct {
 	NewView *views.View
 }
@@ -25,5 +26,13 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 
 // Create is usee to process the signup form and create a new user account
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Temp")
+	if err := r.ParseForm(); err != nil {
+		panic(err)
+	}
+
+	// r.PostForm = map[string][]string
+	fmt.Fprintln(w, r.PostForm["email"])
+	fmt.Fprintln(w, r.PostForm["password"])
+	// fmt.Fprintln(w, r.PostFormValue("email"))
+
 }
