@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -18,6 +21,7 @@ type User struct {
 	gorm.Model
 	Name  string `gorm:"not null"`
 	Email string `gorm:"not null; unique_index"`
+	Color string
 }
 
 func main() {
@@ -35,6 +39,40 @@ func main() {
 		panic(err)
 	}
 
-	// db.DropTableIfExists(&User{})
+	db.LogMode(true)
 	db.AutoMigrate(&User{})
+
+	name, email, color := getInfo()
+
+	u := User{
+		Name:  name,
+		Email: email,
+		Color: color,
+	}
+
+	if err := db.Create(&u).Error; err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", u)
+	// db.DropTableIfExists(&User{})
+}
+
+func getInfo() (name, email, color string) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("What's your name?")
+	name, _ = reader.ReadString('\n')
+
+	fmt.Println("What's your email?")
+	email, _ = reader.ReadString('\n')
+
+	fmt.Println("What's your favorite color?")
+	color, _ = reader.ReadString('\n')
+
+	name = strings.TrimSpace(name)
+	email = strings.TrimSpace(email)
+	color = strings.TrimSpace(color)
+
+	return name, email, color
 }
