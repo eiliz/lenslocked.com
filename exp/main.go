@@ -1,45 +1,57 @@
 package main
 
 import (
-	"html/template"
-	"os"
+	"database/sql"
+	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
-type Dog struct {
-	Name string
-}
-
-type User struct {
-	Name  string
-	Dog   Dog
-	Int   int
-	Float float64
-	Slice []string
-	Map   map[string]string
-}
+const (
+	host   = "localhost"
+	port   = 5432
+	user   = "ella"
+	dbname = "lenslocked_dev"
+)
 
 func main() {
-	t, err := template.ParseFiles("hello.gohtml")
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
 		panic(err)
 	}
 
-	data := User{
-		Name: "John Smith",
-		Dog: Dog{
-			Name: "Morty",
-		},
-		Int:   32,
-		Float: 3.14,
-		Slice: []string{"a", "b", "c"},
-		Map: map[string]string{
-			"alpha": "beta",
-			"theta": "gamma",
-		},
-	}
-	err = t.Execute(os.Stdout, data)
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT *
+		FROM users
+		INNER JOIN orders ON users.id=orders.user_id`)
+
 	if err != nil {
 		panic(err)
 	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var userID, orderID, amount int
+		var email, name, desc string
+
+		err = rows.Scan(&userID, &name, &email, &orderID, &userID, &amount, &desc)
+
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("userID: ", userID, "name: ", name, "email: ", email, "orderID: ", orderID, "userID: ", userID, "amount: ", amount, "desc: ", desc)
+
+	}
+
+	if rows.Err() != nil {
+		panic(rows.Err())
+	}
+
 }
