@@ -16,9 +16,17 @@ const (
 
 type User struct {
 	gorm.Model
-	Name  string `gorm:"not null"`
-	Email string `gorm:"not null; unique_index"`
-	Color string
+	Name   string `gorm:"not null"`
+	Email  string `gorm:"not null; unique_index"`
+	Color  string
+	Orders []Order
+}
+
+type Order struct {
+	gorm.Model
+	UserID      uint
+	Amount      int
+	Description string
 }
 
 func main() {
@@ -33,12 +41,26 @@ func main() {
 	defer db.Close()
 
 	db.LogMode(true)
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Order{})
 
-	var user = User{
-		Color: "navy",
+	var u User
+
+	if err := db.Preload("Orders").Where("color = ?", "navy").First(&u).Error; err != nil {
+		panic(err)
 	}
 
-	db.Where(user).First(&user)
-	fmt.Println(user)
+	fmt.Println(u)
+
+}
+
+func createOrder(db *gorm.DB, user User, amount int, desc string) {
+	err := db.Create(&Order{
+		UserID:      user.ID,
+		Amount:      amount,
+		Description: desc,
+	}).Error
+
+	if err != nil {
+		panic(err)
+	}
 }
