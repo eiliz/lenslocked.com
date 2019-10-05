@@ -1,10 +1,10 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 const (
@@ -14,10 +14,16 @@ const (
 	dbname = "lenslocked_dev"
 )
 
+type User struct {
+	gorm.Model
+	Name  string `gorm:"not null"`
+	Email string `gorm:"not null; unique_index"`
+}
+
 func main() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := gorm.Open("postgres", psqlInfo)
 
 	if err != nil {
 		panic(err)
@@ -25,33 +31,10 @@ func main() {
 
 	defer db.Close()
 
-	rows, err := db.Query(`
-		SELECT *
-		FROM users
-		INNER JOIN orders ON users.id=orders.user_id`)
-
-	if err != nil {
+	if err := db.DB().Ping(); err != nil {
 		panic(err)
 	}
 
-	defer rows.Close()
-
-	for rows.Next() {
-		var userID, orderID, amount int
-		var email, name, desc string
-
-		err = rows.Scan(&userID, &name, &email, &orderID, &userID, &amount, &desc)
-
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println("userID: ", userID, "name: ", name, "email: ", email, "orderID: ", orderID, "userID: ", userID, "amount: ", amount, "desc: ", desc)
-
-	}
-
-	if rows.Err() != nil {
-		panic(rows.Err())
-	}
-
+	// db.DropTableIfExists(&User{})
+	db.AutoMigrate(&User{})
 }
