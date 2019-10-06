@@ -5,6 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"lenslocked.com/models"
 )
 
 const (
@@ -32,24 +33,22 @@ type Order struct {
 func main() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbname)
 
-	db, err := gorm.Open("postgres", psqlInfo)
+	us, err := models.NewUserService(psqlInfo)
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer db.Close()
+	defer us.Close()
+	us.DestructiveReset()
 
-	db.LogMode(true)
-	db.AutoMigrate(&User{}, &Order{})
+	// user, err := us.ByID(1)
 
-	var u User
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	if err := db.Preload("Orders").Where("color = ?", "navy").First(&u).Error; err != nil {
-		panic(err)
-	}
-
-	fmt.Println(u)
+	// fmt.Println(user)
 
 }
 
