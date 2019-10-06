@@ -19,6 +19,8 @@ func NewUserService(connectionInfo string) (*UserService, error) {
 		return nil, err
 	}
 
+	db.LogMode(true)
+
 	return &UserService{
 		db: db,
 	}, nil
@@ -33,6 +35,12 @@ func (us *UserService) Close() error {
 func (us *UserService) DestructiveReset() {
 	us.db.DropTableIfExists(&User{})
 	us.db.AutoMigrate(&User{})
+}
+
+// Create will create the provided user and backfill data
+// like ID, CreateAt, and UpdatedAt
+func (us *UserService) Create(user *User) error {
+	return us.db.Create(user).Error
 }
 
 type UserService struct {
