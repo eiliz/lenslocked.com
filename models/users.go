@@ -43,6 +43,12 @@ func (us *UserService) Create(user *User) error {
 	return us.db.Create(user).Error
 }
 
+// Update will updated the provided user with all of data
+// in the provided user object
+func (us *UserService) Update(user *User) error {
+	return us.db.Save(user).Error
+}
+
 type UserService struct {
 	db *gorm.DB
 }
@@ -59,14 +65,26 @@ type User struct {
 // 3 - nil, otherError
 func (us *UserService) ByID(id uint) (*User, error) {
 	var user User
-	err := us.db.Where("id=?", id).First(&user).Error
+	db := us.db.Where("id = ?", id)
+	err := first(db, &user)
+	return &user, err
+}
 
-	switch err {
-	case nil:
-		return &user, nil
-	case gorm.ErrRecordNotFound:
-		return nil, ErrNotFound
-	default:
-		return nil, err
+// ByEmail looks up a user with the given email address
+// and returns that user
+func (us *UserService) ByEmail(email string) (*User, error) {
+	var user User
+	db := us.db.Where("email = ?", email)
+	err := first(db, &user)
+	return &user, err
+}
+
+func first(db *gorm.DB, user *User) error {
+	err := db.First(user).Error
+
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+
 	}
+	return err
 }
