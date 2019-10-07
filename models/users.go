@@ -36,9 +36,19 @@ func (us *UserService) Close() error {
 }
 
 // DestructiveReset drops the users and rebuilds it
-func (us *UserService) DestructiveReset() {
-	us.db.DropTableIfExists(&User{})
-	us.db.AutoMigrate(&User{})
+func (us *UserService) DestructiveReset() error {
+	if err := us.db.DropTableIfExists(&User{}).Error; err != nil {
+		return err
+	}
+	return us.AutoMigrate()
+}
+
+// AutoMigrate will attempt to atuomatically migrate the Users table
+func (us *UserService) AutoMigrate() error {
+	if err := us.db.AutoMigrate(&User{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 // Create will create the provided user and backfill data
@@ -83,7 +93,6 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-<<<<<<< HEAD
 // Delete will remove the user with the provided ID
 func (us *UserService) Delete(id uint) error {
 	if id == 0 {
@@ -98,8 +107,6 @@ func (us *UserService) Delete(id uint) error {
 	return err
 }
 
-=======
->>>>>>> b4a3250ac6e2f594325122ad7ed1b22b21afb9ab
 // first will query using the provided gorm.DB and it will get
 // the first item returned and place it into dst.
 // If nothing is found in the query, it will return ErrNotFound

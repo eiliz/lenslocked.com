@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"net/http"
 
+	"lenslocked.com/models"
+
 	"lenslocked.com/views"
 )
 
 // NewUsers is used to create a new Users controller. This function will panic if the templates are not parsed correctly and should only be used during the initial setup
-func NewUsers() *Users {
+func NewUsers(us *models.UserService) *Users {
 	return &Users{
 		NewView: views.NewView("bootstrap", "users/new"),
+		us:      us,
 	}
 }
 
 // Users is the users controller
 type Users struct {
 	NewView *views.View
+	us      *models.UserService
 }
 
 // SignupForm maps to new users
@@ -38,5 +42,15 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		panic(err)
 	}
+	user := models.User{
+		Name:  form.Name,
+		Email: form.Email,
+	}
+
+	if err := u.us.Create(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	fmt.Fprintln(w, form)
 }
